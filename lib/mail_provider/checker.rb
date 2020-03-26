@@ -28,8 +28,8 @@ module MailProvider
       return info if data.empty?
 
       add_success info, true, data[provided.name], data.key?(provided.name)
+      add_success info, :subdomain, data.to_a[0][1], data.to_a[0][0] != provided.domain
       add_success info, :domain, data[provided.domain], data.key?(provided.domain)
-      add_success info, :subdomain, data.to_a[0][1], true
       info.merge(data: domains.to_h)
     end
 
