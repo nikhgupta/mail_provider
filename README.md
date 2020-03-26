@@ -93,6 +93,8 @@ lib.check 'nick@codewithsense.com'
 #     :unicode=>"codewithsense.com", :reason=>:not_found}
 ```
 
+## Explaination
+
 In the above examples, `free` is the number of sources claiming that the given
 domain/email is from a free email provider, `disposable` is the number of sources
 claiming that the given domain/email is from a disposable email provider.
@@ -105,18 +107,15 @@ strings in our records (giving us a total of 3):
 - sub.root.co.in
 - root.co.in
 
-```plain
-is = category | when count of other category is zero
-maybe = category | when percent count (category) > percent count (other category) + 20
-```
-
 If `summarize` is `true`, counts for each domain parts are added starting from root domain.
+
+## Custom sources
 
 The above uses pre-configured list of sources. To use your own list of
 sources, provide a file with one (url) line per source.
 
-We check the lists for inclusion of `gmail.com` and `mailinator.com` domains to
-decide what kind of emails they list. To improve confidence, provide sources that
+We check the lists for inclusion of `gmail.com` and `mailinator.com` and other similar domains to
+decide what kind of emails they list. To improve efficiency, only provide sources that
 list EITHER free OR disposable emails, and not both.
 
 Afterwards, you can do:
