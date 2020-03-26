@@ -23,20 +23,20 @@ module MailProvider
       domains = domains.select { |item| item.last.values.sum.positive? }
       data = summarize ? summarize_domain_parts(domains).to_h : domains.to_h
 
-      info = { provided: provided.name, summarize: summarize, total: checked,
-               success: true, unicode: SimpleIDN.to_unicode(provided.name) }
-      return info.merge(reason: :not_found, success: false) if data.empty?
+      info = { ascii: provided.name, summarize: summarize, checked: checked,
+               found: false, unicode: SimpleIDN.to_unicode(provided.name) }
+      return info if data.empty?
 
-      add_success info, :found, data[provided.name], data.key?(provided.name)
-      add_success info, :domain_found, data[provided.domain], data.key?(provided.domain)
-      add_success info, :subdomain_found, data.to_a[0][1], true
-      info.merge(extra: domains.to_h)
+      add_success info, true, data[provided.name], data.key?(provided.name)
+      add_success info, :domain, data[provided.domain], data.key?(provided.domain)
+      add_success info, :subdomain, data.to_a[0][1], true
+      info.merge(data: domains.to_h)
     end
 
-    def add_success(info, reason, item, condition)
-      return if info[:reason] || !condition
+    def add_success(info, found, item, condition)
+      return if info[:found] || !condition
 
-      info.merge!(reason: reason)
+      info.merge!(found: found)
       info.merge!(item)
     end
 

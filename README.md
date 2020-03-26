@@ -52,45 +52,48 @@ lib = MailProvider.new(refresh: true)
 lib = MailProvider.new(refresh: false)
 
 # check an email for status
-lib.check 'example@subsub.sub.gmail.pp.au'
-# => {:provided=>"subsub.sub.gmail.pp.ua", :summarize=>false, :success=>true,
-#     :free=>1, :disposable=>2, :reason=>:domain_found, :unicode=>"gmail.pp.au",
-#     :total=>1, :extra=>{"gmail.pp.ua"=>{:free=>1, :disposable=>2}}}
+lib.check 'example@subsub.sub.n.ra3.us'
+# => {:ascii=>"subsub.sub.n.ra3.us",
+#  :summarize=>false,
+#  :checked=>4,
+#  :found=>:domain,
+#  :unicode=>"subsub.sub.n.ra3.us",
+#  :free=>0,
+#  :disposable=>9,
+#  :data=>{"n.ra3.us"=>{:free=>0, :disposable=>4}, "ra3.us"=>{:free=>0, :disposable=>9}}}
 
 lib.check "финские-вейдерсы-2019.рф"
-# => {:provided=>"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai",
+# => {:ascii=>"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai",
 #     :summarize=>false,
-#     :success=>true,
+#     :found=>true,
 #     :unicode=>"финские-вейдерсы-2019.рф",
-#     :reason=>:domain_found,
-#     :total=>1,
+#     :found=>:domain,
+#     :checked=>1,
 #     :free=>0,
 #     :disposable=>1,
-#     :extra=>{"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai"=>{:free=>0, :disposable=>1}}}
+#     :data=>{"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai"=>{:free=>0, :disposable=>1}}}
 
 # check an email for status while summing up scores for each step in domain
 lib.check 'c.nut.emailfake.nut.cc', summarize: true
-# => {:provided=>"c.nut.emailfake.nut.cc",
-#     :summarize=>true,
-#     :total=>4,
-#     :success=>true,
-#     :unicode=>"c.nut.emailfake.nut.cc",
-#     :reason=>:found,
-#     :free=>2,
-#     :disposable=>10,
-#     :extra=>{
-#       "c.nut.emailfake.nut.cc"=>{:free=>1, :disposable=>1},
-#       "emailfake.nut.cc"=>{:free=>0, :disposable=>3},
-#       "nut.cc"=>{:free=>1, :disposable=>6}}}
+# => {:ascii=>"c.nut.emailfake.nut.cc",
+#  :summarize=>true,
+#  :checked=>4,
+#  :found=>true,
+#  :unicode=>"c.nut.emailfake.nut.cc",
+#  :free=>2,
+#  :disposable=>19,
+#  :data=>{"c.nut.emailfake.nut.cc"=>{:free=>1, :disposable=>3},
+#          "emailfake.nut.cc"=>{:free=>0, :disposable=>6},
+#          "nut.cc"=>{:free=>1, :disposable=>10}}}
 
 # check a domain for status
 lib.check 'gmail.com'
-# => {:provided=>"gmail.com", :summarize=>false, :total=>1, :success=>true, :unicode=>"gmail.com",
-#     :reason=>:found, :free=>8, :disposable=>0, :extra=>{"gmail.com"=>{:free=>8, :disposable=>0}}}
+# => {:ascii=>"gmail.com", :summarize=>false, :checked=>1, :found=>true, :unicode=>"gmail.com",
+#     :free=>8, :disposable=>0, :data=>{"gmail.com"=>{:free=>8, :disposable=>0}}}
 
 lib.check 'nick@codewithsense.com'
-# => {:provided=>"codewithsense.com", :summarize=>false, :total=>1, :success=>false,
-#     :unicode=>"codewithsense.com", :reason=>:not_found}
+# => {:ascii=>"codewithsense.com", :summarize=>false, :checked=>1, :found=>false,
+#     :unicode=>"codewithsense.com"}
 ```
 
 ## Explaination
@@ -99,7 +102,7 @@ In the above examples, `free` is the number of sources claiming that the given
 domain/email is from a free email provider, `disposable` is the number of sources
 claiming that the given domain/email is from a disposable email provider.
 
-`total` is the number of domain parts checked for this email/domain for entries
+`checked` is the number of domain parts checked for this email/domain for entries
 present with us. For example, for domain `subsub.sub.root.co.in`, we check the following
 strings in our records (giving us a total of 3):
 
