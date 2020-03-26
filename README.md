@@ -71,22 +71,26 @@ lib.check "финские-вейдерсы-2019.рф"
 # check an email for status while summing up scores for each step in domain
 lib.check 'c.nut.emailfake.nut.cc', summarize: true
 # => {:provided=>"c.nut.emailfake.nut.cc",
-#  :summarize=>true,
-#  :total=>4,
-#  :success=>true,
-#  :unicode=>"c.nut.emailfake.nut.cc",
-#  :reason=>:found,
-#  :free=>2,
-#  :disposable=>10,
-#  :extra=>{
-#    "c.nut.emailfake.nut.cc"=>{:free=>1, :disposable=>1},
-#    "emailfake.nut.cc"=>{:free=>0, :disposable=>3},
-#    "nut.cc"=>{:free=>1, :disposable=>6}}}
+#     :summarize=>true,
+#     :total=>4,
+#     :success=>true,
+#     :unicode=>"c.nut.emailfake.nut.cc",
+#     :reason=>:found,
+#     :free=>2,
+#     :disposable=>10,
+#     :extra=>{
+#       "c.nut.emailfake.nut.cc"=>{:free=>1, :disposable=>1},
+#       "emailfake.nut.cc"=>{:free=>0, :disposable=>3},
+#       "nut.cc"=>{:free=>1, :disposable=>6}}}
 
 # check a domain for status
 lib.check 'gmail.com'
 # => {:provided=>"gmail.com", :summarize=>false, :total=>1, :success=>true, :unicode=>"gmail.com",
 #     :reason=>:found, :free=>8, :disposable=>0, :extra=>{"gmail.com"=>{:free=>8, :disposable=>0}}}
+
+lib.check 'nick@codewithsense.com'
+# => {:provided=>"codewithsense.com", :summarize=>false, :total=>1, :success=>false,
+#     :unicode=>"codewithsense.com", :reason=>:not_found}
 ```
 
 In the above examples, `free` is the number of sources claiming that the given
