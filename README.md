@@ -52,7 +52,7 @@ lib = MailProvider.new(refresh: true)
 lib = MailProvider.new(refresh: false)
 
 # check an email for status
-lib.check 'example@gmail.pp.au'
+lib.check 'example@subsub.sub.gmail.pp.au'
 # => {:provided=>"subsub.sub.gmail.pp.ua", :summarize=>false, :success=>true,
 #     :free=>1, :disposable=>2, :reason=>:domain_found, :unicode=>"gmail.pp.au",
 #     :total=>1, :extra=>{"gmail.pp.ua"=>{:free=>1, :disposable=>2}}}

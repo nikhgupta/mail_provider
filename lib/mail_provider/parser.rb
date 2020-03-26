@@ -4,7 +4,7 @@ module MailProvider
   class Parser
     FAMOUS_CHECKS = {
       free: %w[gmail.com hotmail.com outlook.com yahoo.com],
-      disposable: %w[mailinator.com temp-mail.ru maildrop.cc 10minutemail.com]
+      disposable: %w[mailinator.com temp-mail.ru maildrop.cc 10minutemail.com musicalnr.com]
     }.freeze
 
     def self.parse(sources)
