@@ -11,6 +11,15 @@ query this data with a given domain or email. For each query, you get back a
 number specifying how many sources are claiming that the domain is a free or
 disposable email provider.
 
+## Features
+
+- check email/domain for free or disposable email provider status
+- 74000+ disposable domains, 9000+ free domains pre-configured
+- provide your own sources for disposable/free domains list
+- checks all parts of subdomain for checking an entry
+- IDN/Punycode compatibility
+- really fast! uses Trie structures.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -43,16 +52,70 @@ lib = MailProvider.new(refresh: true)
 lib = MailProvider.new(refresh: false)
 
 # check an email for status
-lib.check 'example@gmail.com'
-# => { free: 19, disposable: 0, total: 20, maybe: :free, score: 0.95 }
+lib.check 'example@gmail.pp.au'
+# => {:provided=>"subsub.sub.gmail.pp.ua", :summarize=>false, :success=>true,
+#     :free=>1, :disposable=>2, :reason=>:domain_found, :unicode=>"gmail.pp.au",
+#     :total=>1, :extra=>{"gmail.pp.ua"=>{:free=>1, :disposable=>2}}}
+
+lib.check "финские-вейдерсы-2019.рф"
+# => {:provided=>"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai",
+#     :summarize=>false,
+#     :success=>true,
+#     :unicode=>"финские-вейдерсы-2019.рф",
+#     :reason=>:domain_found,
+#     :total=>1,
+#     :free=>0,
+#     :disposable=>1,
+#     :extra=>{"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai"=>{:free=>0, :disposable=>1}}}
+
+# check an email for status while summing up scores for each step in domain
+lib.check 'c.nut.emailfake.nut.cc', summarize: true
+# => {:provided=>"c.nut.emailfake.nut.cc",
+#  :summarize=>true,
+#  :total=>4,
+#  :success=>true,
+#  :unicode=>"c.nut.emailfake.nut.cc",
+#  :reason=>:found,
+#  :free=>2,
+#  :disposable=>10,
+#  :extra=>{
+#    "c.nut.emailfake.nut.cc"=>{:free=>1, :disposable=>1},
+#    "emailfake.nut.cc"=>{:free=>0, :disposable=>3},
+#    "nut.cc"=>{:free=>1, :disposable=>6}}}
 
 # check a domain for status
 lib.check 'gmail.com'
-# => { free: 19, disposable: 0, total: 20, maybe: :free, score: 0.95 }
+# => {:provided=>"gmail.com", :summarize=>false, :total=>1, :success=>true, :unicode=>"gmail.com",
+#     :reason=>:found, :free=>8, :disposable=>0, :extra=>{"gmail.com"=>{:free=>8, :disposable=>0}}}
 ```
 
+In the above examples, `free` is the number of sources claiming that the given
+domain/email is from a free email provider, `disposable` is the number of sources
+claiming that the given domain/email is from a disposable email provider.
+
+`total` is the number of domain parts checked for this email/domain for entries
+present with us. For example, for domain `subsub.sub.root.co.in`, we check the following
+strings in our records (giving us a total of 3):
+
+- subsub.sub.root.co.in
+- sub.root.co.in
+- root.co.in
+
+```plain
+is = category | when count of other category is zero
+maybe = category | when percent count (category) > percent count (other category) + 20
+```
+
+If `summarize` is `true`, counts for each domain parts are added starting from root domain.
+
 The above uses pre-configured list of sources. To use your own list of
-sources, provide a file with one (url) line per source. You can do:
+sources, provide a file with one (url) line per source.
+
+We check the lists for inclusion of `gmail.com` and `mailinator.com` domains to
+decide what kind of emails they list. To improve confidence, provide sources that
+list EITHER free OR disposable emails, and not both.
+
+Afterwards, you can do:
 
 ```ruby
 MailProvider.new(sources: "<path-to-file>", refresh: true)
