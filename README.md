@@ -54,24 +54,25 @@ lib = MailProvider.new(refresh: false)
 # check an email for status
 lib.check 'example@subsub.sub.n.ra3.us'
 # => {:ascii=>"subsub.sub.n.ra3.us",
-#  :summarize=>false,
-#  :checked=>4,
-#  :found=>:domain,
-#  :unicode=>"subsub.sub.n.ra3.us",
-#  :free=>0,
-#  :disposable=>9,
-#  :data=>{"n.ra3.us"=>{:free=>0, :disposable=>4}, "ra3.us"=>{:free=>0, :disposable=>9}}}
+#     :found=>2,
+#     :unicode=>"subsub.sub.n.ra3.us",
+#     :domain=>"ra3.us",
+#     :tld=>"us",
+#     :data=>{"n.ra3.us"=>{:free=>0, :disposable=>4}, "ra3.us"=>{:free=>0, :disposable=>9}},
+#     :match=>:subdomain,
+#     :free=>0,
+#     :disposable=>4}
 
 lib.check "финские-вейдерсы-2019.рф"
 # => {:ascii=>"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai",
-#     :summarize=>false,
-#     :found=>true,
+#     :found=>1,
 #     :unicode=>"финские-вейдерсы-2019.рф",
-#     :found=>:domain,
-#     :checked=>1,
+#     :domain=>"финские-вейдерсы-2019.рф",
+#     :tld=>"рф",
+#     :data=>{"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai"=>{:free=>0, :disposable=>1}},
+#     :match=>:entry,
 #     :free=>0,
-#     :disposable=>1,
-#     :data=>{"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai"=>{:free=>0, :disposable=>1}}}
+#     :disposable=>1}
 
 # check an email for status while summing up scores for each step in domain
 lib.check 'c.nut.emailfake.nut.cc', summarize: true
