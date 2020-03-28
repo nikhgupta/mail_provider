@@ -16,20 +16,28 @@ module MailProvider
       setup refresh: true
     end
 
+    def max_entries
+      @max_entries ||= MailProvider::Parser::FAMOUS_CHECKS.map do |type, checks|
+        [type, checks.map { |check| find(check)[type] }.max]
+      end.to_h
+    end
+
     def check(str, summarize: false)
-      provided, domains, data = fetch_data_for(str, summarize: summarize)
-      build_response provided, domains, summarize: summarize
-      add_success data, :entry, provided.name
-      if data.any?
-        add_success data, :subdomain, data.to_a[0][0], provided.domain
-      end
-      add_success data, :domain, provided.domain
+      max_entries
+
+      given, domains, data = fetch_data_for(str, summarize: summarize)
+      build_response given, domains, summarize: summarize
+
+      add_success data, :entry, given.name
+      add_success data, :subdomain, data.to_a[0][0], given.domain if data.any?
+      add_success data, :domain, given.domain
+
+      add_score_to_response
       @response
     end
 
     def find(str)
-      func = ->(trie) { _, val = trie.get(str); val.to_i }
-      { free: func.call(@free), disposable: func.call(@disposable) }
+      map(:get, str).map { |k, v| [k, v ? v[1] : 0] }.to_h
     end
 
     def map(m, *a, &b)
@@ -73,6 +81,18 @@ module MailProvider
 
       @response.merge!(match: match)
       @response.merge!(data[key])
+    end
+
+    def add_score_to_response
+      @response[:score] = nil
+      return unless @response.key?(:free) && @response.key?(:disposable)
+
+      score  = @response[:free] / @max_entries[:free].to_f
+      score -= @response[:disposable] / @max_entries[:disposable].to_f
+      score  = -1 if score < -1
+      score  =  1 if score >  1
+
+      @response[:score] = score.round(4)
     end
 
     def load_tries

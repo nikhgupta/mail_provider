@@ -11,14 +11,19 @@ query this data with a given domain or email. For each query, you get back a
 number specifying how many sources are claiming that the domain is a free or
 disposable email provider.
 
+**This gem was written in a couple of hours, and the intention has been to
+get this working first for a project I am working on. This gem still needs
+refactoring to make the code more readable, tests, etc. PRs welcome :)**
+
 ## Features
 
-- check email/domain for free or disposable email provider status
-- 74000+ disposable domains, 9000+ free domains pre-configured
-- provide your own sources for disposable/free domains list
-- checks all parts of subdomain for checking an entry
 - IDN/Punycode compatibility
-- really fast! uses Trie structures.
+- should be thread-safe - immutable Trie structure.
+- really fast! Uses efficient Patricia Trie structure.
+- checks all parts of subdomain for checking an entry
+- provide your own sources for disposable/free domains list
+- 74000+ disposable domains, 9000+ free domains pre-configured
+- check email/domain for free or disposable email provider status
 
 ## Installation
 
@@ -52,16 +57,20 @@ lib = MailProvider.new(refresh: true)
 lib = MailProvider.new(refresh: false)
 
 # check an email for status
-lib.check 'example@subsub.sub.n.ra3.us'
-# => {:ascii=>"subsub.sub.n.ra3.us",
-#     :found=>2,
-#     :unicode=>"subsub.sub.n.ra3.us",
-#     :domain=>"ra3.us",
-#     :tld=>"us",
-#     :data=>{"n.ra3.us"=>{:free=>0, :disposable=>4}, "ra3.us"=>{:free=>0, :disposable=>9}},
-#     :match=>:subdomain,
-#     :free=>0,
-#     :disposable=>4}
+lib.check 'example@c.nut.emailfake.nut.cc'
+# => {:ascii=>"c.nut.emailfake.nut.cc",
+#     :found=>3,
+#     :unicode=>"c.nut.emailfake.nut.cc",
+#     :domain=>"nut.cc",
+#     :tld=>"cc",
+#     :match=>:entry,
+#     :summarize=>false,
+#     :free=>1,
+#     :disposable=>3,
+#     :score=>-0.0625,
+#     :data=>{"c.nut.emailfake.nut.cc"=>{:free=>1, :disposable=>3},
+#             "emailfake.nut.cc"=>{:free=>0, :disposable=>6},
+#             "nut.cc"=>{:free=>1, :disposable=>10}},
 
 lib.check "финские-вейдерсы-2019.рф"
 # => {:ascii=>"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai",
@@ -71,56 +80,69 @@ lib.check "финские-вейдерсы-2019.рф"
 #     :tld=>"рф",
 #     :data=>{"xn----2019-iofqgcb4aasj1c8cik0c5k.xn--p1ai"=>{:free=>0, :disposable=>1}},
 #     :match=>:entry,
+#     :score=>-0.0625,
 #     :free=>0,
 #     :disposable=>1}
 
 # check an email for status while summing up scores for each step in domain
 lib.check 'c.nut.emailfake.nut.cc', summarize: true
 # => {:ascii=>"c.nut.emailfake.nut.cc",
-#  :summarize=>true,
-#  :checked=>4,
-#  :found=>true,
-#  :unicode=>"c.nut.emailfake.nut.cc",
-#  :free=>2,
-#  :disposable=>19,
-#  :data=>{"c.nut.emailfake.nut.cc"=>{:free=>1, :disposable=>3},
-#          "emailfake.nut.cc"=>{:free=>0, :disposable=>6},
-#          "nut.cc"=>{:free=>1, :disposable=>10}}}
+#     :found=>3,
+#     :unicode=>"c.nut.emailfake.nut.cc",
+#     :domain=>"nut.cc",
+#     :tld=>"cc",
+#     :match=>:entry,
+#     :summarize=>true,
+#     :free=>2,
+#     :disposable=>19,
+#     :score=>-0.9375,
+#     :data=>{"c.nut.emailfake.nut.cc"=>{:free=>1, :disposable=>3},
+#             "emailfake.nut.cc"=>{:free=>0, :disposable=>6},
+#             "nut.cc"=>{:free=>1, :disposable=>10}},
 
 # check a domain for status
 lib.check 'gmail.com'
 # => {:ascii=>"gmail.com", :summarize=>false, :checked=>1, :found=>true, :unicode=>"gmail.com",
-#     :free=>8, :disposable=>0, :data=>{"gmail.com"=>{:free=>8, :disposable=>0}}}
+#     :score=>1.0,:free=>8, :disposable=>0, :data=>{"gmail.com"=>{:free=>8, :disposable=>0}}}
 
 lib.check 'nick@codewithsense.com'
-# => {:ascii=>"codewithsense.com", :summarize=>false, :checked=>1, :found=>false,
-#     :unicode=>"codewithsense.com"}
+# => {:ascii=>"codewithsense.com", :found=>0, :unicode=>"codewithsense.com",
+#     :domain=>"codewithsense.com", :tld=>"com", :data=>{}, :match=>nil,
+#     :summarize=>false, :score=>nil}
 ```
 
 ## Explaination
 
-In the above examples, `free` is the number of sources claiming that the given
-domain/email is from a free email provider, `disposable` is the number of sources
-claiming that the given domain/email is from a disposable email provider.
+In the above examples, `free` is the number of sources claiming that the
+given domain/email is from a free email provider, `disposable` is the number
+of sources claiming that the given domain/email is from a disposable email
+provider.
 
-`checked` is the number of domain parts checked for this email/domain for entries
-present with us. For example, for domain `subsub.sub.root.co.in`, we check the following
-strings in our records (giving us a total of 3):
+`checked` is the number of domain parts checked for this email/domain for
+entries present with us. For example, for domain `subsub.sub.root.co.in`, we
+check the following strings in our records (giving us a total of 3):
 
 - subsub.sub.root.co.in
 - sub.root.co.in
 - root.co.in
 
-If `summarize` is `true`, counts for each domain parts are added starting from root domain.
+If `summarize` is `true`, counts for each domain parts are added starting
+from root domain.
+
+`score` is the percent of sources claiming the string to be a free provider
+minus the percent of sources claiming the string to be a disposable provider.
+This value is `nil` if the string is not found in our entries, otherwise a
+value between `-1` and `1`.
 
 ## Custom sources
 
 The above uses pre-configured list of sources. To use your own list of
 sources, provide a file with one (url) line per source.
 
-We check the lists for inclusion of `gmail.com` and `mailinator.com` and other similar domains to
-decide what kind of emails they list. To improve efficiency, only provide sources that
-list EITHER free OR disposable emails, and not both.
+We check the lists for inclusion of `gmail.com` and `mailinator.com` and
+other similar domains to decide what kind of emails they list. To improve
+efficiency, only provide sources that list EITHER free OR disposable emails,
+and not both.
 
 Afterwards, you can do:
 
