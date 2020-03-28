@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec', '~> 3.0'
 
   spec.add_dependency 'faraday'
-  spec.add_dependency 'fast_trie'
+  spec.add_dependency 'hamster'
   spec.add_dependency 'public_suffix'
   spec.add_dependency 'simpleidn'
 end

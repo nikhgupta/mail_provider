@@ -7,10 +7,10 @@ module MailProvider
   class TrieLoadError < StandardError; end
 end
 
-require 'trie'
 require 'faraday'
-require 'digest/md5'
 require 'simpleidn'
+require 'digest/md5'
+require 'hamster/trie'
 require 'public_suffix'
 
 require 'mail_provider/version'

@@ -18,15 +18,17 @@ module MailProvider
 
     def check(str, summarize: false)
       provided, domains, data = fetch_data_for(str, summarize: summarize)
-      build_response provided, domains
+      build_response provided, domains, summarize: summarize
       add_success data, :entry, provided.name
-      add_success data, :subdomain, data.to_a[0][0], provided.domain
+      if data.any?
+        add_success data, :subdomain, data.to_a[0][0], provided.domain
+      end
       add_success data, :domain, provided.domain
       @response
     end
 
-    def get(str)
-      func = ->(trie) { trie.get(str).to_i }
+    def find(str)
+      func = ->(trie) { _, val = trie.get(str); val.to_i }
       { free: func.call(@free), disposable: func.call(@disposable) }
     end
 
@@ -48,20 +50,20 @@ module MailProvider
 
     def fetch_data_for(str, summarize: false)
       provided, domains = extract_domains(str)
-      domains = domains.map { |part| [part, get(part)] }
+      domains = domains.map { |part| [part, find(part)] }
       domains = domains.select { |item| item.last.values.sum.positive? }
       data = summarize ? summarize_domain_parts(domains).to_h : domains.to_h
       [provided, domains, data]
     end
 
-    def build_response(provided, domains)
+    def build_response(provided, domains, extra = {})
       @response = {
         ascii: provided.name, found: domains.length,
         unicode: SimpleIDN.to_unicode(provided.name),
         domain: SimpleIDN.to_unicode(provided.domain),
         tld: SimpleIDN.to_unicode(provided.tld),
         data: domains.to_h, match: nil
-      }
+      }.merge(extra)
     end
 
     def add_success(data, match, key, check = nil)
