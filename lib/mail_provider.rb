@@ -4,7 +4,10 @@ module MailProvider
   ROOT_DIR = File.dirname(File.dirname(__FILE__))
 
   class Error < StandardError; end
-  class TrieLoadError < StandardError; end
+  class ClientError < Error; end
+  class ServerError < Error; end
+  class TrieLoadError < ServerError; end
+  class DomainParsingError < ClientError; end
 end
 
 require 'faraday'

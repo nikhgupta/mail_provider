@@ -34,6 +34,8 @@ module MailProvider
 
       add_score_to_response
       @response
+    rescue PublicSuffix::Error => e
+      raise DomainParsingError, e.message
     end
 
     def find(str)
